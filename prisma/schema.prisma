@@ -1,0 +1,323 @@
+generator client {
+  provider = "prisma-client"
+  output = "../apps/api/src/generated/prisma"
+  moduleFormat = "esm"
+}
+datasource db {
+  provider = "postgresql"
+}
+enum Priority {
+  CRITICAL
+  HIGH
+  NORMAL
+  LOW
+}
+enum OccurrenceStatus {
+  SCHEDULED
+  COMPLETED
+  SKIPPED
+  MISSED
+  PARTIAL
+}
+enum DeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  CANCELLED
+}
+enum GoalUnit {
+  MINUTES
+  HOURS
+  TIMES
+}
+enum GoalPeriod {
+  DAILY
+  WEEKLY
+}
+model User {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  passwordHash String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  settings UserSettings?
+  sessions Session[]
+  routines RoutineRule[]
+  events CalendarEvent[]
+  occurrences ScheduledOccurrence[]
+  subscriptions PushSubscription[]
+  goals Goal[]
+  focusSessions FocusSession[]
+  categories Category[]
+  incidents IncidentLearning[]
+}
+model Session {
+  id String @id @default(uuid())
+  tokenHash String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@index([expiresAt])
+}
+model UserSettings {
+  id String @id @default(uuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timezone String @default("America/Sao_Paulo")
+  wakeTime String @default("06:30")
+  sleepTime String @default("23:00")
+  sleepHours Float @default(7.5)
+  windDownMinutes Int @default(30)
+  gymTimes Int @default(5)
+  gymDuration Int @default(60)
+  gymPeriod String @default("MORNING")
+  gymMinTime String @default("06:00")
+  gymMaxTime String @default("08:30")
+  gymBuffer Int @default(15)
+  studyMinutes Int @default(30)
+  studyIdealMinutes Int @default(60)
+  locale String @default("pt-BR")
+  timeFormat String @default("24h")
+  weekStartsOn Int @default(1)
+  studyPeriod String @default("EVENING")
+  autoPlan Boolean @default(false)
+  notificationsDesired Boolean @default(false)
+  onboardingDone Boolean @default(false)
+  theme String @default("dark")
+  categoryReminders Json @default("{}")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+model Category {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key String
+  name String
+  emoji String
+  color String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@unique([userId, key])
+}
+model RoutineRule {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title String
+  category String
+  emoji String @default("📌")
+  color String @default("#a3e635")
+  weekdays Int[]
+  startTime String
+  endTime String
+  timezone String
+  flexible Boolean @default(false)
+  priority Priority @default(NORMAL)
+  location String @default("")
+  notes String @default("")
+  reminderMinutes Int[] @default([10, 0])
+  active Boolean @default(true)
+  effectiveFrom String
+  effectiveUntil String?
+  managedKind String?
+  bootstrapKey String?
+  reminderMessages Json @default("{}")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  exceptions RoutineException[]
+  occurrences ScheduledOccurrence[]
+  @@index([userId, active])
+  @@unique([userId, bootstrapKey])
+}
+model RoutineException {
+  id String @id @default(uuid())
+  routineId String
+  routine RoutineRule @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  localDate String
+  skipped Boolean @default(false)
+  startTime String?
+  endTime String?
+  title String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@unique([routineId, localDate])
+}
+model CalendarEvent {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title String
+  category String
+  emoji String @default("📌")
+  color String @default("#a3e635")
+  startAt DateTime @db.Timestamptz(3)
+  endAt DateTime @db.Timestamptz(3)
+  timezone String
+  priority Priority @default(NORMAL)
+  location String @default("")
+  notes String @default("")
+  reminderMinutes Int[] @default([10, 0])
+  plannerKey String?
+  goalId String?
+  goal Goal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  reminderMessages Json @default("{}")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  occurrences ScheduledOccurrence[]
+  @@unique([userId, plannerKey])
+  @@index([userId, startAt])
+}
+model ScheduledOccurrence {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineId String?
+  routine RoutineRule? @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  eventId String?
+  event CalendarEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  sourceKey String @unique
+  localDate String
+  title String
+  category String
+  emoji String
+  color String
+  startAt DateTime @db.Timestamptz(3)
+  endAt DateTime @db.Timestamptz(3)
+  timezone String
+  flexible Boolean @default(false)
+  priority Priority
+  location String
+  notes String
+  status OccurrenceStatus @default(SCHEDULED)
+  overridden Boolean @default(false)
+  goalId String?
+  goal Goal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  reminders Reminder[]
+  completion CompletionLog?
+  focusSessions FocusSession[]
+  @@index([userId, startAt])
+}
+model Reminder {
+  id String @id @default(uuid())
+  occurrenceId String
+  occurrence ScheduledOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  key String @unique
+  scheduledAt DateTime @db.Timestamptz(3)
+  nextAttemptAt DateTime @db.Timestamptz(3)
+  title String
+  body String
+  status DeliveryStatus @default(PENDING)
+  sentAt DateTime? @db.Timestamptz(3)
+  claimedAt DateTime? @db.Timestamptz(3)
+  attempts Int @default(0)
+  lastError String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  deliveries NotificationDelivery[]
+  @@index([status, nextAttemptAt])
+}
+model PushSubscription {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint String @unique
+  p256dh String
+  auth String
+  active Boolean @default(true)
+  userAgent String @default("")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  deliveries NotificationDelivery[]
+}
+model NotificationDelivery {
+  id String @id @default(uuid())
+  reminderId String
+  reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+  subscriptionId String
+  subscription PushSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  status DeliveryStatus @default(PENDING)
+  sentAt DateTime? @db.Timestamptz(3)
+  attempts Int @default(0)
+  lastError String?
+  retryable Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@unique([reminderId, subscriptionId])
+}
+model Goal {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name String
+  category String
+  target Float
+  unit GoalUnit
+  period GoalPeriod
+  active Boolean @default(true)
+  topic String @default("")
+  priority Priority @default(HIGH)
+  description String @default("")
+  topics String[] @default([])
+  planningOrder Int @default(0)
+  bootstrapKey String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@index([userId, active])
+  @@unique([userId, bootstrapKey])
+  focusSessions FocusSession[]
+  events CalendarEvent[]
+  occurrences ScheduledOccurrence[]
+}
+model CompletionLog {
+  id String @id @default(uuid())
+  occurrenceId String @unique
+  occurrence ScheduledOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  status OccurrenceStatus
+  completedAt DateTime @db.Timestamptz(3)
+  actualDuration Int
+  notes String @default("")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+model FocusSession {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  occurrenceId String?
+  occurrence ScheduledOccurrence? @relation(fields: [occurrenceId], references: [id], onDelete: SetNull)
+  title String
+  category String
+  plannedMinutes Int
+  startedAt DateTime @default(now()) @db.Timestamptz(3)
+  endedAt DateTime? @db.Timestamptz(3)
+  actualDuration Int @default(0)
+  goalId String?
+  goal Goal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  technology String @default("")
+  studied String @default("")
+  learning String @default("")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@index([userId, endedAt])
+}
+model IncidentLearning {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title String
+  technology String
+  error String @default("")
+  hypothesis String @default("")
+  cause String @default("")
+  solution String @default("")
+  learning String @default("")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@index([userId, createdAt])
+}

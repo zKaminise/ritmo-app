@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+work/
+apps/api/src/generated/
+*.log
+*.pem
+*.key
+secrets/
+**/secrets/
+*.local
