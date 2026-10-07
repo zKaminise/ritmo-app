@@ -97,7 +97,10 @@ storageState, conteúdo de senha ou token. O relatório local contém somente es
 - Remote: `origin`, `https://github.com/zKaminise/ritmo-app.git`.
 - `git fetch origin` executado antes da integração; repositório remoto inicialmente vazio.
 - Identidade do commit usa endereço noreply, sem publicar o e-mail pessoal da conta.
-- Commit de implementação e resultado do push: serão registrados após a validação final e envio.
+- Commit de implementação: `7a123080b9d6aa3216bfcb42b66d05dbbc739885` — `feat: prepare Ritmo for real-world usage`.
+- Push: **SUCESSO**. `git push -u origin main` concluiu e `git ls-remote origin refs/heads/main` confirmou o mesmo SHA.
+- Após o envio, `git status` confirmou `main...origin/main` sem alterações pendentes.
+- Este relatório recebe um commit de documentação posterior; ambos os commits são enviados sem force push.
 - Nenhum force push é utilizado.
 
 O Docker Engine permanece indisponível nesta máquina. A configuração Compose é válida;
