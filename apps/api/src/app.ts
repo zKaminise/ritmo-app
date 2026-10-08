@@ -10,6 +10,7 @@ import { PushService } from './push.js';
 import { ReminderWorker } from './worker.js';
 import { InsightsService } from './insights.js';
 import { LearningService, LearningController } from './learning.js';
+import { SchedulerController, SchedulerService, SchedulerGuard } from './scheduler.js';
 @ApiTags('health')
 @Controller('health')
 class HealthController {
@@ -18,7 +19,13 @@ class HealthController {
   }
 }
 @Module({
-  controllers: [AuthController, AgendaController, HealthController, LearningController],
+  controllers: [
+    AuthController,
+    AgendaController,
+    HealthController,
+    LearningController,
+    SchedulerController,
+  ],
   providers: [
     Database,
     AuthService,
@@ -29,6 +36,8 @@ class HealthController {
     ReminderWorker,
     InsightsService,
     LearningService,
+    SchedulerService,
+    SchedulerGuard,
   ],
 })
 export class AppModule {}

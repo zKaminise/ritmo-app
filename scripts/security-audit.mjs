@@ -2,12 +2,33 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { parse } from 'dotenv';
 const local = parse(readFileSync('.env'));
+const deployment = (() => {
+  try {
+    return parse(readFileSync('work/deployment.env'));
+  } catch {
+    return {};
+  }
+})();
+const remote = (() => {
+  try {
+    return parse(readFileSync('work/remote.env'));
+  } catch {
+    return {};
+  }
+})();
 const values = [
   process.env.BOOTSTRAP_USER_PASSWORD,
   process.env.BOOTSTRAP_USER_EMAIL,
   local.VAPID_PRIVATE_KEY,
   local.JWT_SECRET,
   local.DATABASE_URL,
+  deployment.CRON_SECRET,
+  deployment.DATABASE_URL,
+  deployment.DIRECT_URL,
+  remote.POSTGRES_PASSWORD,
+  remote.SUPABASE_SERVICE_ROLE_KEY,
+  remote.SUPABASE_SECRET_KEY,
+  remote.SUPABASE_JWT_SECRET,
 ].filter(Boolean);
 const candidates = execFileSync(
   'git',

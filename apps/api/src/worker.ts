@@ -4,6 +4,7 @@ import { Database } from './database.js';
 import { Materializer } from './materializer.js';
 import { PushService } from './push.js';
 import { InsightsService } from './insights.js';
+import { schedulerMode } from './platform.js';
 @Injectable()
 export class ReminderWorker implements OnModuleInit, OnModuleDestroy {
   private timer?: ReturnType<typeof setInterval>;
@@ -18,7 +19,7 @@ export class ReminderWorker implements OnModuleInit, OnModuleDestroy {
     @Inject(InsightsService) private readonly insights: InsightsService,
   ) {}
   onModuleInit() {
-    if (process.env.NODE_ENV === 'test') return;
+    if (process.env.NODE_ENV === 'test' || schedulerMode() !== 'continuous') return;
     this.timer = setInterval(() => void this.tick().catch((e) => this.logger.error(e)), 15000);
     this.refreshTimer = setInterval(
       () => void this.refresh().catch((e) => this.logger.error(e)),

@@ -12,3 +12,4 @@ apps/api/src/generated/
 secrets/
 **/secrets/
 *.local
+.vercel/

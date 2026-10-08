@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { Database } from './database.js';
 import { DateTime } from 'luxon';
+import { schedulerMode } from './platform.js';
 const providers = [
   'fcm.googleapis.com',
   'push.services.mozilla.com',
@@ -265,7 +266,7 @@ export class PushService {
     });
   }
   async diagnostics(userId: string) {
-    const [settings, delivery, subscriptions] = await Promise.all([
+    const [settings, delivery, subscriptions, scheduler] = await Promise.all([
       this.db.userSettings.findUniqueOrThrow({ where: { userId } }),
       this.db.notificationDelivery.findFirst({
         where: { reminder: { occurrence: { userId } }, status: 'SENT' },
@@ -273,6 +274,15 @@ export class PushService {
         select: { sentAt: true },
       }),
       this.db.pushSubscription.count({ where: { userId, active: true } }),
+      this.db.schedulerState.findUnique({
+        where: { id: 'reminders' },
+        select: {
+          lastCompletedAt: true,
+          lastStartedAt: true,
+          lastRefreshAt: true,
+          lastError: true,
+        },
+      }),
     ]);
     return {
       backend: 'online',
@@ -281,6 +291,8 @@ export class PushService {
       subscriptions,
       configured: this.configured,
       notificationsDesired: settings.notificationsDesired,
+      schedulerMode: schedulerMode(),
+      scheduler,
     };
   }
 }

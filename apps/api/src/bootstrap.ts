@@ -9,9 +9,18 @@ import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import { AppModule } from './app.js';
 import { Errors } from './http.js';
+import { appOrigin, schedulerMode } from './platform.js';
 export async function createApp() {
-  if (process.env.NODE_ENV === 'production' && !process.env.APP_URL?.startsWith('https://'))
+  if (process.env.NODE_ENV === 'production' && !appOrigin().startsWith('https://'))
     throw new Error('APP_URL deve usar HTTPS em produção.');
+  if (
+    process.env.NODE_ENV === 'production' &&
+    schedulerMode() === 'external' &&
+    (!process.env.CRON_SECRET || process.env.CRON_SECRET.length < 32)
+  )
+    throw new Error(
+      'Configure CRON_SECRET com pelo menos 32 caracteres para o agendador hospedado.',
+    );
   const app = await NestFactory.create(AppModule, {
     logger: process.env.NODE_ENV === 'test' ? false : ['log', 'warn', 'error'],
   });
@@ -59,7 +68,7 @@ export async function createApp() {
   app.use('/api', (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
       const origin = req.headers.origin;
-      const allowed = new Set([new URL(process.env.APP_URL ?? 'http://localhost:5173').origin]);
+      const allowed = new Set([appOrigin()]);
       if (process.env.NODE_ENV !== 'production') {
         allowed.add('http://localhost:3000');
         allowed.add('http://localhost:5173');

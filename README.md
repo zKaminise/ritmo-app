@@ -1,5 +1,8 @@
 # Ritmo
 
+Deploy na Vercel: consulte [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) para a configuração
+Services com Supabase Free, agendador protegido e teste da PWA no celular.
+
 Aplicação de rotina e organização pessoal, mobile-first, com frontend React, API NestJS,
 PostgreSQL, PWA e Web Push real. A pergunta principal é **“O que eu deveria estar fazendo agora?”**
 Todo compromisso é configurável. Dados pessoais de rotina ficam no banco ou em arquivos locais ignorados pelo Git.

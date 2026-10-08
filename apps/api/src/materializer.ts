@@ -7,7 +7,7 @@ type Tx = Prisma.TransactionClient;
 @Injectable()
 export class Materializer {
   constructor(@Inject(Database) private readonly db: Database) {}
-  async run(userId: string, now = new Date(), days = 16) {
+  async run(userId: string, now = new Date(), days = 16, timeout = 60000) {
     return this.db.$transaction(
       async (tx) => {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
@@ -106,7 +106,7 @@ export class Materializer {
           );
         }
       },
-      { timeout: 60000 },
+      { timeout },
     );
   }
   async reminders(

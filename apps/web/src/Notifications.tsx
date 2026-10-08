@@ -19,6 +19,8 @@ export function Notifications() {
     subscriptions: number;
     configured: boolean;
     notificationsDesired: boolean;
+    schedulerMode: string;
+    scheduler: { lastCompletedAt: string | null; lastError: string | null } | null;
   }>('/push/diagnostics', true, 15000);
   const [permission, setPermission] = useState(
     'Notification' in window ? Notification.permission : 'indisponível',
@@ -214,6 +216,25 @@ export function Notifications() {
               last ? new Date(last).toLocaleString('pt-BR') : 'Nenhum registrado',
             ],
             ['Timezone da conta', diagnostics.data?.timezone ?? user.settings.timezone],
+            [
+              'Agendador',
+              diagnostics.data?.schedulerMode === 'external'
+                ? 'Hospedado · Supabase'
+                : diagnostics.data?.schedulerMode === 'preview-disabled'
+                  ? 'Desativado no preview'
+                  : 'Contínuo no servidor',
+            ],
+            [
+              'Último ciclo de lembretes',
+              diagnostics.data?.scheduler?.lastCompletedAt
+                ? new Date(diagnostics.data.scheduler.lastCompletedAt).toLocaleString('pt-BR', {
+                    timeZone: user.settings.timezone,
+                    hour12: false,
+                  })
+                : diagnostics.data?.schedulerMode === 'external'
+                  ? 'Aguardando primeiro ciclo'
+                  : 'Servidor local',
+            ],
             ['Timezone detectado', Intl.DateTimeFormat().resolvedOptions().timeZone],
             ['Versão', '1.0.0'],
           ].map(([k, v]) => (

@@ -31,7 +31,10 @@
     "bootstrap:user": "tsx --tsconfig apps/api/tsconfig.json scripts/bootstrap-user.ts",
     "profile:import": "tsx --tsconfig apps/api/tsconfig.json scripts/import-profile.ts",
     "verify:user": "node scripts/verify-user.mjs",
-    "security:audit": "node scripts/security-audit.mjs"
+    "security:audit": "node scripts/security-audit.mjs",
+    "deployment:env": "node scripts/deployment-env.mjs",
+    "data:migrate": "tsx --tsconfig apps/api/tsconfig.json scripts/migrate-personal-data.ts",
+    "scheduler:configure": "node scripts/configure-hosted-scheduler.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

@@ -321,3 +321,14 @@ model IncidentLearning {
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
   @@index([userId, createdAt])
 }
+model SchedulerState {
+  id String @id
+  leaseOwner String?
+  leaseUntil DateTime? @db.Timestamptz(3)
+  lastStartedAt DateTime? @db.Timestamptz(3)
+  lastCompletedAt DateTime? @db.Timestamptz(3)
+  lastRefreshAt DateTime? @db.Timestamptz(3)
+  lastError String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}

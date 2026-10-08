@@ -12,6 +12,7 @@ import { Database } from './database.js';
 import { Materializer } from './materializer.js';
 import { ReminderWorker } from './worker.js';
 import { PushService } from './push.js';
+import { SchedulerService } from './scheduler.js';
 config({ quiet: true });
 process.env.NODE_ENV = 'test';
 if (
@@ -666,5 +667,52 @@ describe('API NestJS + PostgreSQL real', () => {
     const diagnostic = await agent.get('/api/push/diagnostics');
     expect(diagnostic.body.timezone).toBe(zone);
     expect(diagnostic.body.backend).toBe('online');
+  });
+  it('agendamento hospedado exige segredo e persiste heartbeat', async () => {
+    const secret = randomUUID() + randomUUID();
+    process.env.CRON_SECRET = secret;
+    try {
+      expect((await request(app.getHttpServer()).post('/api/internal/scheduler')).status).toBe(401);
+      expect((await agent.post('/api/internal/scheduler')).status).toBe(401);
+      expect(
+        (
+          await request(app.getHttpServer())
+            .post('/api/internal/scheduler')
+            .set('Authorization', 'Bearer incorreto')
+        ).status,
+      ).toBe(401);
+      const send = vi
+        .spyOn(app.get(PushService), 'send')
+        .mockResolvedValue({ statusCode: 201, body: '', headers: {} });
+      const result = await request(app.getHttpServer())
+        .post('/api/internal/scheduler')
+        .set('Authorization', `Bearer ${secret}`);
+      expect(result.status).toBe(201);
+      expect(result.body.status).toBe('ok');
+      const state = await db.schedulerState.findUniqueOrThrow({ where: { id: 'reminders' } });
+      expect(state.lastCompletedAt).not.toBeNull();
+      expect(state.leaseUntil).toBeNull();
+      send.mockRestore();
+    } finally {
+      delete process.env.CRON_SECRET;
+      await db.schedulerState.deleteMany({ where: { id: 'reminders' } });
+    }
+  });
+  it('lease hospedado impede ciclos concorrentes e previews não enviam', async () => {
+    await db.schedulerState.create({
+      data: {
+        id: 'reminders',
+        leaseOwner: 'outro-processo',
+        leaseUntil: new Date(Date.now() + 60000),
+      },
+    });
+    expect(await app.get(SchedulerService).run()).toEqual({ status: 'busy' });
+    process.env.VERCEL_ENV = 'preview';
+    try {
+      expect(await app.get(SchedulerService).run()).toEqual({ status: 'disabled-preview' });
+    } finally {
+      delete process.env.VERCEL_ENV;
+      await db.schedulerState.delete({ where: { id: 'reminders' } });
+    }
   });
 });
