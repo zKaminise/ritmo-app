@@ -1,6 +1,6 @@
 # Ritmo
 
-Produção: **[Abrir Ritmo](https://ritmo-app-rho.vercel.app)**. A conta pessoal foi migrada
+Produção: **[Abrir Ritmo](https://ritmo.gabrielmisao.com.br)**. A conta pessoal foi migrada
 com suas rotinas e metas; use as credenciais já configuradas. O cron remoto funciona
 independentemente do computador. No celular, instale a PWA e ative notificações no Perfil.
 

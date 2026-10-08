@@ -1,6 +1,6 @@
 # Ritmo na Vercel Hobby + Supabase Free
 
-Publicado em **https://ritmo-app-rho.vercel.app** em 8 de outubro de 2026.
+Publicado em **https://ritmo.gabrielmisao.com.br** em 8 de outubro de 2026.
 Projeto Vercel `ritmo-app`, branch de produção `main`, banco Supabase Free vinculado
 somente a Production. Onze variáveis do backend foram importadas como Sensitive em
 Production; a integração mantém suas variáveis adicionais no mesmo ambiente.
@@ -22,24 +22,29 @@ o manifest, os ícones e o Service Worker no mesmo domínio HTTPS.
 
 ## Variáveis na Vercel
 
-| Variável            | Valor                                                                              |
-| ------------------- | ---------------------------------------------------------------------------------- |
-| `DATABASE_URL`      | Conexão privada do pooler Supabase em modo transaction (6543)                      |
-| `DIRECT_URL`        | Conexão privada do pooler em modo session (5432), usada nas migrations             |
-| `NODE_ENV`          | `production`                                                                       |
-| `PORT`              | `3000`                                                                             |
-| `SCHEDULER_MODE`    | `external`                                                                         |
-| `DB_POOL_MAX`       | `3`                                                                                |
-| `SESSION_DAYS`      | `30`                                                                               |
-| `CRON_SECRET`       | Segredo aleatório de pelo menos 32 caracteres, somente no servidor/Vault           |
-| `VAPID_PUBLIC_KEY`  | Chave pública da instalação                                                        |
-| `VAPID_PRIVATE_KEY` | Chave privada, somente no servidor                                                 |
-| `VAPID_SUBJECT`     | Contato VAPID válido                                                               |
-| `APP_URL`           | Opcional: domínio HTTPS definitivo; sem valor, usa `VERCEL_PROJECT_PRODUCTION_URL` |
+| Variável            | Valor                                                                    |
+| ------------------- | ------------------------------------------------------------------------ |
+| `DATABASE_URL`      | Conexão privada do pooler Supabase em modo transaction (6543)            |
+| `DIRECT_URL`        | Conexão privada do pooler em modo session (5432), usada nas migrations   |
+| `NODE_ENV`          | `production`                                                             |
+| `PORT`              | `3000`                                                                   |
+| `SCHEDULER_MODE`    | `external`                                                               |
+| `DB_POOL_MAX`       | `3`                                                                      |
+| `SESSION_DAYS`      | `30`                                                                     |
+| `CRON_SECRET`       | Segredo aleatório de pelo menos 32 caracteres, somente no servidor/Vault |
+| `VAPID_PUBLIC_KEY`  | Chave pública da instalação                                              |
+| `VAPID_PRIVATE_KEY` | Chave privada, somente no servidor                                       |
+| `VAPID_SUBJECT`     | Contato VAPID válido                                                     |
+| `APP_URL`           | `https://ritmo.gabrielmisao.com.br`, origem HTTPS oficial de produção    |
 
 O Supabase pode fornecer `POSTGRES_URL` e `POSTGRES_URL_NON_POOLING`; os scripts locais
 convertem esses nomes em `DATABASE_URL`/`DIRECT_URL`. Não use endereço localhost no deploy.
 Variáveis privadas não devem usar prefixo `VITE_` e não devem ser commitadas.
+
+Ao adicionar ou trocar o domínio na Vercel, atualize `APP_URL` em Production e publique
+um novo deployment. Vincular o domínio no painel não altera a validação de origem do
+backend. Use a origem exata, com HTTPS e sem caminhos; nunca libere todas as origens.
+Atualize também o endereço no Vault executando `scheduler:configure` com a nova URL.
 
 O backend valida certificados e hostname do PostgreSQL com a CA pública oficial
 do Supabase em `apps/api/certs/supabase-ca.crt`, obtida pelo link Download certificate
