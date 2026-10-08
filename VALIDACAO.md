@@ -1,4 +1,4 @@
-# Validação da entrega — 7 de outubro de 2026
+# Validação da entrega — atualização em 8 de outubro de 2026
 
 Projeto: `D:\Importante\Codex\App Rotina`.
 
@@ -37,12 +37,12 @@ O navegador automatizado deste ambiente não concedeu permissão de notificaçã
 A entrega efetiva pela Apple/Google/Mozilla, com o aplicativo fechado, **ainda precisa ser
 validada em um dispositivo com permissão real**. O roteiro completo está no README.
 
-## Verificações que dependem de outro ambiente
+## Limitações observadas na etapa local de 7 de outubro
 
 - Construção da imagem Docker: o Docker Desktop instalado não disponibilizou seu engine.
   Os builds Node/Vite/Nest e as migrations foram executados diretamente.
 - Instalação e notificações em iPhone físico: requer domínio HTTPS acessível e teste no dispositivo.
-- Deploy público: não foi publicado um domínio ou contratado um serviço de hospedagem.
+- Deploy público: ainda não publicado nessa etapa; concluído em 8 de outubro conforme abaixo.
 
 ## Consultar os resultados
 
@@ -105,3 +105,38 @@ storageState, conteúdo de senha ou token. O relatório local contém somente es
 
 O Docker Engine permanece indisponível nesta máquina. A configuração Compose é válida;
 os builds frontend/backend são executados diretamente, sem marcar essa limitação como erro da aplicação.
+
+## Produção — 8 de outubro de 2026
+
+URL pública: **https://ritmo-app-rho.vercel.app**.
+Vercel Hobby, projeto `ritmo-app`, um serviço container para frontend/API no mesmo domínio.
+Supabase Free vinculado a Production; variáveis privadas Sensitive apenas em Production.
+Construção de `Dockerfile.vercel` concluída na Vercel; status Ready.
+Atualizações de `main` disparam deploy automaticamente, sem force push.
+
+| Verificação                 | Resultado                                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| Testes unitários            | 32 passaram, incluindo modo hospedado e TLS PostgreSQL                                    |
+| E2E API                     | 23 passaram, incluindo segredo, lease concorrente e preview sem entregas                  |
+| E2E browser                 | 3 passaram                                                                                |
+| Typecheck, lint, build      | Passaram; frontend, API e shared compilados                                               |
+| Revisão de segredos         | 112 arquivos publicáveis; nenhuma credencial local encontrada                             |
+| Migrations remotas          | 6 aplicadas, sem pendências; conexão com validação estrita da CA Supabase                 |
+| Dados pessoais remotos      | 1 conta, 10 rotinas, 3 metas; hash Argon2id preservado                                    |
+| Isolamento Supabase         | 17 tabelas com RLS; zero grants para anon/authenticated                                   |
+| Login HTTPS pela interface  | Passou com conta pessoal; nenhuma senha, cookie ou trace salvo                            |
+| Sessão HTTPS                | Cookie Secure/HttpOnly/SameSite=Lax; refresh, logout e novo login passaram                |
+| Dados e timezone            | 10 rotinas, 3 metas, America/Sao_Paulo conferidos                                         |
+| Responsividade hospedada    | Hoje, rotinas, metas, aprendizado, agenda e perfil em 390×844/1920×1080 sem overflow      |
+| Evento temporário hospedado | Criação, edição, persistência e exclusão passaram; dados transitórios removidos           |
+| PWA HTTPS                   | Manifest, ícones e Service Worker registrados no domínio público                          |
+| VAPID hospedado             | Chaves configuradas; somente chave pública exposta pelo endpoint autenticado              |
+| Agendador remoto            | pg_cron/pg_net ativo por minuto; segredo no Vault; HTTP 201, heartbeat e ausência de erro |
+| Proteção do agendador       | Sessão comum sem Bearer dedicado recebeu 401                                              |
+| Push nativo em celular      | Não afirmado: depende de instalação/permissão e teste no dispositivo físico               |
+
+Relatórios locais sem credenciais: `work/hosted-validation.json` e
+`work/hosted-reminder-validation.json`. Prints de prova ficam na pasta `outputs` da tarefa.
+O cron pode acrescentar cerca de um minuto ao envio, além de cold start/latência.
+Vercel/Supabase permanecem nos planos gratuitos; limites e eventual pausa por inatividade
+devem ser observados. Nenhum plano pago foi contratado.

@@ -1,5 +1,14 @@
 # Ritmo na Vercel Hobby + Supabase Free
 
+Publicado em **https://ritmo-app-rho.vercel.app** em 8 de outubro de 2026.
+Projeto Vercel `ritmo-app`, branch de produção `main`, banco Supabase Free vinculado
+somente a Production. Onze variáveis do backend foram importadas como Sensitive em
+Production; a integração mantém suas variáveis adicionais no mesmo ambiente.
+As seis migrations foram aplicadas e somente a conta pessoal foi migrada.
+O job `ritmo-reminders` está ativo a cada minuto, com respostas HTTP 201 e heartbeat
+registrado. Login, sessão, dados, CRUD de evento, telas 390×844/1920×1080 e PWA HTTPS
+foram verificados no domínio público. Push nativo ainda exige permissão no celular.
+
 O deploy usa o `vercel.json` na raiz, preset **Services**, Root Directory **./** e um
 único serviço HTTP construído por `Dockerfile.vercel`. A API serve o frontend compilado,
 o manifest, os ícones e o Service Worker no mesmo domínio HTTPS.

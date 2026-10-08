@@ -159,8 +159,10 @@ export class PushService {
       reminderId: reminder.id,
       scheduledAt,
       message: delayMinutes
-        ? 'Lembrete criado para daqui a 1 minuto. Mantenha o servidor ativo.'
-        : 'Teste agendado. O worker enviará em até 15 segundos.',
+        ? 'Lembrete criado para daqui a 1 minuto. A entrega depende da permissão neste dispositivo.'
+        : schedulerMode() === 'external'
+          ? 'Teste agendado para o próximo ciclo, em cerca de 1 minuto.'
+          : 'Teste agendado. O worker enviará em até 15 segundos.',
     };
   }
   async process(id: string) {

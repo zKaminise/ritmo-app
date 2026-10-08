@@ -89,7 +89,7 @@ export function Notifications() {
           onClick={() =>
             void action.run(
               () => api('/push/reminder-test', 'POST'),
-              'Lembrete criado para daqui a 1 minuto. Mantenha o servidor ativo.',
+              'Lembrete criado para daqui a 1 minuto. A entrega depende da permissão neste dispositivo.',
             )
           }
         >
@@ -126,7 +126,9 @@ export function Notifications() {
               void action
                 .run(
                   () => api('/push/test', 'POST'),
-                  'Notificação real agendada. Aguarde até 15 segundos.',
+                  diagnostics.data?.schedulerMode === 'external'
+                    ? 'Notificação agendada para o próximo ciclo, em cerca de 1 minuto.'
+                    : 'Notificação real agendada. Aguarde até 15 segundos.',
                 )
                 .then(() => refresh())
             }

@@ -1,5 +1,9 @@
 # Ritmo
 
+Produção: **[Abrir Ritmo](https://ritmo-app-rho.vercel.app)**. A conta pessoal foi migrada
+com suas rotinas e metas; use as credenciais já configuradas. O cron remoto funciona
+independentemente do computador. No celular, instale a PWA e ative notificações no Perfil.
+
 Deploy na Vercel: consulte [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) para a configuração
 Services com Supabase Free, agendador protegido e teste da PWA no celular.
 
